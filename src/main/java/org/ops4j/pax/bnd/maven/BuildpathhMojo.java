@@ -7,6 +7,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.ops4j.pax.bnd.maven.Utils.*;
+
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
@@ -40,7 +42,7 @@ public class BuildpathhMojo extends AbstractMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         Set<Artifact> artifacts = new HashSet<Artifact>();
         try {
-            Workspace workspace = Utils.printInfo("Running the Pax BND Buildpath Mojo", getLog(), Utils.getWorkspace(new File(session.getExecutionRootDirectory())));
+            Workspace workspace = printInfo("Running the Pax BND Buildpath Mojo", getLog(), getWorkspace(new File(session.getExecutionRootDirectory())));
             Project workspaceProject = workspace.getProject(project.getArtifactId());
             if (project == null)
                 throw new MojoExecutionException("Something is broken with your workspace. Cannot find " + project.getArtifactId() + "(from pom.xml) in BND Workspace.");
@@ -62,47 +64,6 @@ public class BuildpathhMojo extends AbstractMojo {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        session.getCurrentProject().setResolvedArtifacts(artifacts);
-    }
-
-    public void execute(MavenProject p) throws MojoExecutionException, MojoFailureException {
-        Set<Artifact> artifacts = new HashSet<Artifact>();
-
-        try {
-            getLog().info("Running the Pax BND Buildpath Mojo");
-            Workspace workspace = Utils.getWorkspace(new File(session.getExecutionRootDirectory()));
-            Project workspaceProject = workspace.getProject(p.getArtifactId());
-            if (project == null)
-                throw new MojoExecutionException("Something is broken with your workspace. Cannot find " + p.getArtifactId() + "(from pom.xml) in BND Workspace.");
-
-            for (Project dep : workspaceProject.getDependson()) {
-                for (Container deliverable : dep.getDeliverables()) {
-                    getLog().info("+ " + deliverable.getFile().getAbsolutePath());
-                    artifacts.add(asArtifact(deliverable.getFile()));
-                }
-            }
-            Collection<Container> cp = workspaceProject.getBuildpath();
-
-            for (Container entry : cp) {
-                getLog().info("+ " + entry.getFile().getAbsolutePath());
-                artifacts.add(asArtifact(entry.getFile()));
-            }
-            workspace.close();
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-        /**
-         * artifacts.add(asArtifact(new File(
-         * "/Users/tonit/devel/rebaze/m2e-bnd-example/test-api/target/test-api-1.0.0.jar"
-         * ))); ; artifacts.add(asArtifact(new File(
-         * "/Users/tonit/.m2/repository/biz/aQute/annotation/1.50.0/annotation-1.50.0.jar"
-         * ))); ;
-         **/
-        // Set<Artifact> pomArtifacts =
-        // session.getCurrentProject().getArtifacts();
-
         session.getCurrentProject().setResolvedArtifacts(artifacts);
     }
 
