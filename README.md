@@ -15,7 +15,6 @@ The following phases are overwritten by this plugin:
 
 Example: 
 - check this project: https://github.com/tonit/workspaceBNDBridgeExample
-- 
 
 How to build:
 run mvn clean install
