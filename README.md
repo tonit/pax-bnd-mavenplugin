@@ -13,4 +13,11 @@ The following phases are overwritten by this plugin:
 - generate_sources: builds the classpath from BND Resolvers.
 - package: generates Bundle using BNDLib (just like maven bundle plugin, but natively using the resources provided by BND instead of Maven).
 
+Example: 
+- check this project: https://github.com/tonit/workspaceBNDBridgeExample
+- 
+
+How to build:
+run mvn clean install
+
 Toni Menzel / Rebaze.com
