@@ -46,17 +46,20 @@ public class BundleMojo extends AbstractMojo {
 
         try {
             Workspace workspace = printInfo("Building using BND Build..", getLog(), getWorkspace(new File(session.getExecutionRootDirectory())));
-            Project workspaceProject = workspace.getProject(project.getArtifactId());
-            if (project == null)
-                throw new MojoExecutionException("Something is broken with your workspace. Cannot find " + project.getArtifactId() + "(from pom.xml) in BND Workspace.");
-
-            files = workspaceProject.build();
+            Project workspaceProject = retrieveProject(workspace);
+            getLog().info("Setting Maven Artifact Version to: " + workspaceProject.getBundleVersion());
+            project.setVersion(workspaceProject.getBundleVersion());
+            project.getArtifact().setVersion(workspaceProject.getBundleVersion());
+            files = buildProject(workspaceProject);
             Utils.printInfo("Build done: " + workspaceProject.getName(), getLog(), workspace);
             workspace.close();
         } catch (Exception e) {
             throw new MojoExecutionException("Problem building the project.", e);
         }
 
+        if (files.length != 1) {
+            throw new MojoExecutionException("Ambiguous output from BND to attach as maven result");
+        }
         // attach bundle to maven project
         File jarFile = files[0];
 
@@ -67,9 +70,26 @@ public class BundleMojo extends AbstractMojo {
             // the "jar" handler
             mainArtifact.setArtifactHandler(m_artifactHandlerManager.getArtifactHandler("jar"));
         }
-
         mainArtifact.setFile(jarFile);
+    }
 
+    private Project retrieveProject(Workspace workspace) throws Exception, MojoExecutionException {
+        Project workspaceProject = workspace.getProject(project.getArtifactId());
+        if (project == null)
+            throw new MojoExecutionException("Something is broken with your workspace. Cannot find " + project.getArtifactId() + "(from pom.xml) in BND Workspace.");
+        return workspaceProject;
+    }
+
+    private File[] buildProject(Project workspaceProject) throws Exception {
+        File[] files = workspaceProject.build();
+        List<String> errors = workspaceProject.getErrors();
+        for (String error : errors) {
+            getLog().error(error);
+        }
+        if (errors.size() > 0) {
+            throw new MojoExecutionException("There are build errors!.");
+        }
+        return files;
     }
 
 }
